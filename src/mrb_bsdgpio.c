@@ -30,7 +30,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   mrb_bsdgpio_data *data;
   char *str;
   int len;
-  gpio_config_t *pin;
+  gpio_config_t pin;
 
   data = (mrb_bsdgpio_data *)DATA_PTR(self);
   if (data) {
@@ -42,8 +42,8 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   mrb_get_args(mrb, "s", &str, &len);
   data = (mrb_bsdgpio_data *)mrb_malloc(mrb, sizeof(mrb_bsdgpio_data));
   data->handle = gpio_open(0);
-  pin.g_pin = 1;
-  pin.g_flags = GPIO_PIN_OUTPUT;
+  pin->g_pin = 1;
+  pin->g_flags = GPIO_PIN_OUTPUT;
   gpio_pin_set_flags(data->handle, &pin);
   
   DATA_PTR(self) = data;
