@@ -72,13 +72,13 @@ static mrb_value mrb_bsdgpio_setflags(mrb_state *mrb, mrb_value self)
 {
   mrb_bsdgpio_data *data = DATA_PTR(self);
   mrb_int pin, flag;
-  gpio_config_t pin;
+  gpio_config_t conf;
 
   mrb_get_args(mrb, "ii", &pin, &flag);
 
-  pin.g_pin = pin;
-  pin.g_flags = flag;
-  gpio_pin_set_flags(data->handle, &pin);
+  conf.g_pin = pin;
+  conf.g_flags = flag;
+  gpio_pin_set_flags(data->handle, &conf);
 
   return mrb_fixnum_value(0);
 }
