@@ -51,7 +51,7 @@ static mrb_value mrb_bsdgpio_set(mrb_state *mrb, mrb_value self)
 
   mrb_get_args(mrb, "ii", &pin, &val);
 
-  gpio_pin_set(data->handle, 1, 0);
+  gpio_pin_set(data->handle, pin, val);
 
   return mrb_fixnum_value(0);
 }
