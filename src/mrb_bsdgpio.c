@@ -90,10 +90,5 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 
 void mrb_mruby_bsdgpio_gem_final(mrb_state *mrb)
 {
-  mrb_bsdgpio_data *data = DATA_PTR(self);
-
-  if(fd) {
-    close(data->fd);
-  }
 }
 
