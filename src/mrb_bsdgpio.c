@@ -11,14 +11,14 @@
 #include "mrb_bsdgpio.h"
 
 #include <fcntl.h>
-#include <sys/gpio.h>
+#include <libgpio.h>
 
 #define DONE mrb_gc_arena_restore(mrb, 0);
 
 typedef struct {
   char *str;
   int len;
-  int fd;
+  gpio_handle_t handle;
 } mrb_bsdgpio_data;
 
 static const struct mrb_data_type mrb_bsdgpio_data_type = {
@@ -30,7 +30,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   mrb_bsdgpio_data *data;
   char *str;
   int len;
-  struct gpio_req req;
+  gpio_config_t *pin;
 
   data = (mrb_bsdgpio_data *)DATA_PTR(self);
   if (data) {
@@ -41,13 +41,11 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
 
   mrb_get_args(mrb, "s", &str, &len);
   data = (mrb_bsdgpio_data *)mrb_malloc(mrb, sizeof(mrb_bsdgpio_data));
-  data->str = str;
-  data->len = len;
-  data->fd = open("/dev/gpioc0", O_RDONLY);
-  req.gp_pin = 1;
-  ioctl(data->fd, GPIOGETCONFIG, &req);
-  req.gp_value = GPIO_PIN_OUTPUT;
-  ioctl(data->fd, GPIOSETCONFIG, &req);
+  data->handle = gpio_open(0);
+  pin.g_pin = 1;
+  pin.g_flags = GPIO_PIN_OUTPUT;
+  gpio_pin_set_flags(data->handle, &pin);
+  
   DATA_PTR(self) = data;
 
   return self;
@@ -64,10 +62,8 @@ static mrb_value mrb_bsdgpio_hi(mrb_state *mrb, mrb_value self)
 {
   mrb_bsdgpio_data *data = DATA_PTR(self);
 
-  struct gpio_req req;
-  req.gp_pin = 1;
-  req.gp_value = 1;
-  ioctl(data->fd, GPIOSET, &req);
+  gpio_pin_set(data->handle, 1, 1);
+
   return mrb_str_new_cstr(mrb, "hi!!");
 }
 
@@ -75,10 +71,8 @@ static mrb_value mrb_bsdgpio_lo(mrb_state *mrb, mrb_value self)
 {
   mrb_bsdgpio_data *data = DATA_PTR(self);
 
-  struct gpio_req req;
-  req.gp_pin = 1;
-  req.gp_value = 0;
-  ioctl(data->fd, GPIOSET, &req);
+  gpio_pin_set(data->handle, 1, 0);
+
   return mrb_str_new_cstr(mrb, "lo!!");
 }
 
