@@ -49,7 +49,7 @@ static mrb_value mrb_bsdgpio_set(mrb_state *mrb, mrb_value self)
   mrb_bsdgpio_data *data = DATA_PTR(self);
   mrb_int pin, val;
 
-  mrb_get_args(mrb, "i", &pin, &val);
+  mrb_get_args(mrb, "ii", &pin, &val);
 
   gpio_pin_set(data->handle, 1, 0);
 
@@ -74,7 +74,7 @@ static mrb_value mrb_bsdgpio_setflags(mrb_state *mrb, mrb_value self)
   mrb_int pin, flag;
   gpio_config_t pin;
 
-  mrb_get_args(mrb, "i", &pin, &flag);
+  mrb_get_args(mrb, "ii", &pin, &flag);
 
   pin.g_pin = pin;
   pin.g_flags = flag;
@@ -89,9 +89,9 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     struct RClass *bsdgpio;
     bsdgpio = mrb_define_class(mrb, "BsdGpio", mrb->object_class);
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
-    mrb_define_method(mrb, bsdgpio, "hi", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
-    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
-    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_setflags, MRB_ARGS_REQ(2));
+    mrb_define_method(mrb, bsdgpio, "set", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
+    mrb_define_method(mrb, bsdgpio, "get", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
+    mrb_define_method(mrb, bsdgpio, "setflags", mrb_bsdgpio_setflags, MRB_ARGS_REQ(2));
     DONE;
 }
 
