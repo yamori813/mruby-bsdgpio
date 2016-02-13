@@ -15,9 +15,9 @@ end
 ```ruby
 t = BsdGpio.new "hello"
 p t.hi
-#=> "hi!"
+#=> "hi!!"
 p t.lo
-#=> "lo!"
+#=> "lo!!"
 p t.bye
 #=> "hello bye"
 ```
