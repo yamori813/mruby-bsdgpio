@@ -13,11 +13,11 @@ end
 ```
 ## example
 ```ruby
-p BsdGpio.hi
-#=> "hi!!"
 t = BsdGpio.new "hello"
-p t.hello
-#=> "hello"
+p t.hi
+#=> "hi!"
+p t.lo
+#=> "lo!"
 p t.bye
 #=> "hello bye"
 ```
