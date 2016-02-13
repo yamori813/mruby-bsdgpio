@@ -10,6 +10,7 @@
 #include "mruby/data.h"
 #include "mrb_bsdgpio.h"
 
+#include <fcntl.h>
 #include <sys/gpio.h>
 
 #define DONE mrb_gc_arena_restore(mrb, 0);
@@ -41,7 +42,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   data = (mrb_bsdgpio_data *)mrb_malloc(mrb, sizeof(mrb_bsdgpio_data));
   data->str = str;
   data->len = len;
-  fd = open("/dev/gpioc0", O_RDONLY);
+  data->fd = open("/dev/gpioc0", O_RDONLY);
   DATA_PTR(self) = data;
 
   return self;
