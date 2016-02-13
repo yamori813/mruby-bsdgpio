@@ -56,19 +56,23 @@ static mrb_value mrb_bsdgpio_hello(mrb_state *mrb, mrb_value self)
 
 static mrb_value mrb_bsdgpio_hi(mrb_state *mrb, mrb_value self)
 {
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+
   struct gpio_req req;
   req.gp_pin = 1;
   req.gp_value = 1;
-  ioctl(fd, GPIOSET, &req);
+  ioctl(data->fd, GPIOSET, &req);
   return mrb_str_new_cstr(mrb, "hi!!");
 }
 
 static mrb_value mrb_bsdgpio_lo(mrb_state *mrb, mrb_value self)
 {
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+
   struct gpio_req req;
   req.gp_pin = 1;
   req.gp_value = 0;
-  ioctl(fd, GPIOSET, &req);
+  ioctl(data->fd, GPIOSET, &req);
   return mrb_str_new_cstr(mrb, "lo!!");
 }
 
@@ -85,8 +89,10 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 
 void mrb_mruby_bsdgpio_gem_final(mrb_state *mrb)
 {
-    if(fd) {
-        close(fd);
-    }
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+
+  if(fd) {
+    close(data->fd);
+  }
 }
 
