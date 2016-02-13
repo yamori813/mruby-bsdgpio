@@ -30,6 +30,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   mrb_bsdgpio_data *data;
   char *str;
   int len;
+  struct gpio_req req;
 
   data = (mrb_bsdgpio_data *)DATA_PTR(self);
   if (data) {
@@ -43,6 +44,9 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   data->str = str;
   data->len = len;
   data->fd = open("/dev/gpioc0", O_RDONLY);
+  req.gp_pin = 1;
+  req.gp_value = GPIO_PIN_OUTPUT;
+  ioctl(data->fd, GPIOSETCONFIG, &req);
   DATA_PTR(self) = data;
 
   return self;
@@ -83,8 +87,8 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     bsdgpio = mrb_define_class(mrb, "BsdGpio", mrb->object_class);
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, bsdgpio, "hello", mrb_bsdgpio_hello, MRB_ARGS_NONE());
-    mrb_define_class_method(mrb, bsdgpio, "hi", mrb_bsdgpio_hi, MRB_ARGS_NONE());
-    mrb_define_class_method(mrb, bsdgpio, "lo", mrb_bsdgpio_lo, MRB_ARGS_NONE());
+    mrb_define_method(mrb, bsdgpio, "hi", mrb_bsdgpio_hi, MRB_ARGS_NONE());
+    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_lo, MRB_ARGS_NONE());
     DONE;
 }
 
