@@ -13,13 +13,14 @@ end
 ```
 ## example
 ```ruby
-t = BsdGpio.new "hello"
-p t.hi
-#=> "hi!!"
-p t.lo
-#=> "lo!!"
-p t.bye
-#=> "hello bye"
+t = BsdGpio.new(0)
+#=> #<BsdGpio:0x40ee3fd8>
+t.setflags(1, BsdGpio::OUTPUT)
+#=> 0
+t.set(1,1)
+#=> 0
+t.set(1,0)
+#=> 0
 ```
 
 ## License
