@@ -88,6 +88,8 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 {
     struct RClass *bsdgpio;
     bsdgpio = mrb_define_class(mrb, "BsdGpio", mrb->object_class);
+    mrb_define_const(mrb, bsdgpio, "INPUT",  mrb_fixnum_value(GPIO_PIN_INPUT));
+    mrb_define_const(mrb, bsdgpio, "OUTPUT",  mrb_fixnum_value(GPIO_PIN_OUTPUT));
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, bsdgpio, "set", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
     mrb_define_method(mrb, bsdgpio, "get", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
