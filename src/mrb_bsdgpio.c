@@ -45,6 +45,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   data->len = len;
   data->fd = open("/dev/gpioc0", O_RDONLY);
   req.gp_pin = 1;
+  ioctl(data->fd, GPIOGETCONFIG, &req);
   req.gp_value = GPIO_PIN_OUTPUT;
   ioctl(data->fd, GPIOSETCONFIG, &req);
   DATA_PTR(self) = data;
