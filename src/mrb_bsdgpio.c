@@ -16,8 +16,6 @@
 #define DONE mrb_gc_arena_restore(mrb, 0);
 
 typedef struct {
-  char *str;
-  int len;
   gpio_handle_t handle;
 } mrb_bsdgpio_data;
 
@@ -28,9 +26,7 @@ static const struct mrb_data_type mrb_bsdgpio_data_type = {
 static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
 {
   mrb_bsdgpio_data *data;
-  char *str;
-  int len;
-  gpio_config_t pin;
+  mrb_int num;
 
   data = (mrb_bsdgpio_data *)DATA_PTR(self);
   if (data) {
@@ -39,51 +35,63 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   DATA_TYPE(self) = &mrb_bsdgpio_data_type;
   DATA_PTR(self) = NULL;
 
-  mrb_get_args(mrb, "s", &str, &len);
+  mrb_get_args(mrb, "i", &num);
   data = (mrb_bsdgpio_data *)mrb_malloc(mrb, sizeof(mrb_bsdgpio_data));
-  data->handle = gpio_open(0);
-  pin.g_pin = 1;
-  pin.g_flags = GPIO_PIN_OUTPUT;
-  gpio_pin_set_flags(data->handle, &pin);
+  data->handle = gpio_open(num);
   
   DATA_PTR(self) = data;
 
   return self;
 }
 
-static mrb_value mrb_bsdgpio_hello(mrb_state *mrb, mrb_value self)
+static mrb_value mrb_bsdgpio_set(mrb_state *mrb, mrb_value self)
 {
   mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int pin, val;
 
-  return mrb_str_new(mrb, data->str, data->len);
-}
-
-static mrb_value mrb_bsdgpio_hi(mrb_state *mrb, mrb_value self)
-{
-  mrb_bsdgpio_data *data = DATA_PTR(self);
-
-  gpio_pin_set(data->handle, 1, 1);
-
-  return mrb_str_new_cstr(mrb, "hi!!");
-}
-
-static mrb_value mrb_bsdgpio_lo(mrb_state *mrb, mrb_value self)
-{
-  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_get_args(mrb, "i", &pin, &val);
 
   gpio_pin_set(data->handle, 1, 0);
 
-  return mrb_str_new_cstr(mrb, "lo!!");
+  return mrb_fixnum_value(0);
 }
+
+static mrb_value mrb_bsdgpio_get(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int pin, val;
+
+  mrb_get_args(mrb, "i", &pin);
+
+  val = gpio_pin_get(data->handle, pin);
+
+  return mrb_fixnum_value(val);
+}
+
+static mrb_value mrb_bsdgpio_setflags(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int pin, flag;
+  gpio_config_t pin;
+
+  mrb_get_args(mrb, "i", &pin, &flag);
+
+  pin.g_pin = pin;
+  pin.g_flags = flag;
+  gpio_pin_set_flags(data->handle, &pin);
+
+  return mrb_fixnum_value(0);
+}
+
 
 void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 {
     struct RClass *bsdgpio;
     bsdgpio = mrb_define_class(mrb, "BsdGpio", mrb->object_class);
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
-    mrb_define_method(mrb, bsdgpio, "hello", mrb_bsdgpio_hello, MRB_ARGS_NONE());
-    mrb_define_method(mrb, bsdgpio, "hi", mrb_bsdgpio_hi, MRB_ARGS_NONE());
-    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_lo, MRB_ARGS_NONE());
+    mrb_define_method(mrb, bsdgpio, "hi", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
+    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
+    mrb_define_method(mrb, bsdgpio, "lo", mrb_bsdgpio_setflags, MRB_ARGS_REQ(2));
     DONE;
 }
 
