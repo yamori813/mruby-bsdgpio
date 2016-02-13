@@ -1,6 +1,6 @@
 # mruby-bsdgpio   [![Build Status](https://travis-ci.org/yamori813/mruby-bsdgpio.svg?branch=master)](https://travis-ci.org/yamori813/mruby-bsdgpio)
 BsdGpio class.
-FreeBSD GPIO wapper for mruby. Build on 11-CURRENT. Because of use libgpio.
+FreeBSD GPIO wrapper for mruby. Build on 11-CURRENT. Because of use libgpio.
 ## install by mrbgems
 - add conf.gem line to `build_config.rb`
 
