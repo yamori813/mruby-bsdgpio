@@ -10,11 +10,14 @@
 #include "mruby/data.h"
 #include "mrb_bsdgpio.h"
 
+#include <sys/gpio.h>
+
 #define DONE mrb_gc_arena_restore(mrb, 0);
 
 typedef struct {
   char *str;
   int len;
+  int fd;
 } mrb_bsdgpio_data;
 
 static const struct mrb_data_type mrb_bsdgpio_data_type = {
@@ -38,6 +41,7 @@ static mrb_value mrb_bsdgpio_init(mrb_state *mrb, mrb_value self)
   data = (mrb_bsdgpio_data *)mrb_malloc(mrb, sizeof(mrb_bsdgpio_data));
   data->str = str;
   data->len = len;
+  fd = open("/dev/gpioc0", O_RDONLY);
   DATA_PTR(self) = data;
 
   return self;
@@ -52,7 +56,20 @@ static mrb_value mrb_bsdgpio_hello(mrb_state *mrb, mrb_value self)
 
 static mrb_value mrb_bsdgpio_hi(mrb_state *mrb, mrb_value self)
 {
+  struct gpio_req req;
+  req.gp_pin = 1;
+  req.gp_value = 1;
+  ioctl(fd, GPIOSET, &req);
   return mrb_str_new_cstr(mrb, "hi!!");
+}
+
+static mrb_value mrb_bsdgpio_lo(mrb_state *mrb, mrb_value self)
+{
+  struct gpio_req req;
+  req.gp_pin = 1;
+  req.gp_value = 0;
+  ioctl(fd, GPIOSET, &req);
+  return mrb_str_new_cstr(mrb, "lo!!");
 }
 
 void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
@@ -62,10 +79,14 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, bsdgpio, "hello", mrb_bsdgpio_hello, MRB_ARGS_NONE());
     mrb_define_class_method(mrb, bsdgpio, "hi", mrb_bsdgpio_hi, MRB_ARGS_NONE());
+    mrb_define_class_method(mrb, bsdgpio, "lo", mrb_bsdgpio_lo, MRB_ARGS_NONE());
     DONE;
 }
 
 void mrb_mruby_bsdgpio_gem_final(mrb_state *mrb)
 {
+    if(fd) {
+        close(fd);
+    }
 }
 
