@@ -8,6 +8,7 @@
 
 #include "mruby.h"
 #include "mruby/data.h"
+#include "mruby/array.h"
 #include "mrb_bsdgpio.h"
 
 #include <fcntl.h>
@@ -83,6 +84,41 @@ static mrb_value mrb_bsdgpio_setflags(mrb_state *mrb, mrb_value self)
   return mrb_fixnum_value(0);
 }
 
+static mrb_value mrb_bsdgpio_access32(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int first_pin, clear_pins, change_pins;
+  struct gpio_access_32 gacc32;
+
+  mrb_get_args(mrb, "iii", &first_pin, &clear_pins, &change_pins);
+
+  gacc32.first_pin = first_pin;
+  gacc32.clear_pins = clear_pins;
+  gacc32.change_pins = change_pins;
+  ioctl(data->handle, GPIOACCESS32, &gacc32);
+
+  return mrb_fixnum_value(gacc32.orig_pins);
+}
+
+static mrb_value mrb_bsdgpio_config32(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int first_pin, num_pins;
+  mrb_value arr;
+  struct gpio_config_32 gconf32;
+  int i;
+
+  mrb_get_args(mrb, "iiA", &first_pin, &num_pins, &arr);
+
+  gconf32.first_pin = first_pin;
+  gconf32.num_pins = num_pins;
+  for (i = 0; i < num_pins; ++i) {
+    gconf32.pin_flags[i] = mrb_fixnum( mrb_ary_ref( mrb, arr, i));
+  }
+  ioctl(data->handle, GPIOCONFIG32, &gconf32);
+
+  return mrb_fixnum_value(0);
+}
 
 void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 {
@@ -94,6 +130,8 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     mrb_define_method(mrb, bsdgpio, "set", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
     mrb_define_method(mrb, bsdgpio, "get", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, bsdgpio, "setflags", mrb_bsdgpio_setflags, MRB_ARGS_REQ(2));
+    mrb_define_method(mrb, bsdgpio, "access32", mrb_bsdgpio_access32, MRB_ARGS_REQ(3));
+    mrb_define_method(mrb, bsdgpio, "config32", mrb_bsdgpio_config32, MRB_ARGS_REQ(3));
     DONE;
 }
 
