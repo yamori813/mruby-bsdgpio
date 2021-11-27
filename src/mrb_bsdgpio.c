@@ -12,6 +12,7 @@
 #include "mrb_bsdgpio.h"
 
 #include <fcntl.h>
+#include <sys/types.h>
 #include <libgpio.h>
 
 #define DONE mrb_gc_arena_restore(mrb, 0);
