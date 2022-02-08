@@ -121,6 +121,17 @@ static mrb_value mrb_bsdgpio_config32(mrb_state *mrb, mrb_value self)
   return mrb_fixnum_value(0);
 }
 
+static mrb_value mrb_bsdgpio_maxpin(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int val;
+  gpio_config_t* pcfgs = NULL;
+
+  val = gpio_pin_list(data->handle, &pcfgs);
+
+  return mrb_fixnum_value(val);
+}
+
 void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 {
     struct RClass *bsdgpio;
@@ -133,6 +144,7 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     mrb_define_method(mrb, bsdgpio, "setflags", mrb_bsdgpio_setflags, MRB_ARGS_REQ(2));
     mrb_define_method(mrb, bsdgpio, "access32", mrb_bsdgpio_access32, MRB_ARGS_REQ(3));
     mrb_define_method(mrb, bsdgpio, "config32", mrb_bsdgpio_config32, MRB_ARGS_REQ(3));
+    mrb_define_method(mrb, bsdgpio, "maxpin", mrb_bsdgpio_maxpin, MRB_ARGS_NONE());
     DONE;
 }
 
