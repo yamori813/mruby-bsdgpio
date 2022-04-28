@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <libgpio.h>
+#include <unistd.h>
 
 #define DONE mrb_gc_arena_restore(mrb, 0);
 
@@ -132,12 +133,39 @@ static mrb_value mrb_bsdgpio_maxpin(mrb_state *mrb, mrb_value self)
   return mrb_fixnum_value(val);
 }
 
+static mrb_value mrb_bsdgpio_waitedge(mrb_state *mrb, mrb_value self)
+{
+  mrb_bsdgpio_data *data = DATA_PTR(self);
+  mrb_int pin, flag;
+  gpio_config_t conf;
+  int res;
+  const size_t numrecs = 64;
+  union {
+     const struct gpio_event_summary sum[numrecs];
+     const struct gpio_event_detail  det[numrecs];
+     uint8_t                         data[1];
+  } buffer;
+
+  mrb_get_args(mrb, "ii", &pin, &flag);
+
+  conf.g_pin = pin;
+  conf.g_flags = flag | GPIO_PIN_INPUT;
+  gpio_pin_set_flags(data->handle, &conf);
+
+  res = read(data->handle, buffer.data, sizeof(buffer));
+
+  return mrb_fixnum_value(buffer.det[0].gp_pinstate);
+}
+
 void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
 {
     struct RClass *bsdgpio;
     bsdgpio = mrb_define_class(mrb, "BsdGpio", mrb->object_class);
     mrb_define_const(mrb, bsdgpio, "INPUT",  mrb_fixnum_value(GPIO_PIN_INPUT));
     mrb_define_const(mrb, bsdgpio, "OUTPUT",  mrb_fixnum_value(GPIO_PIN_OUTPUT));
+    mrb_define_const(mrb, bsdgpio, "EDGE_RISING",  mrb_fixnum_value(GPIO_INTR_EDGE_RISING));
+    mrb_define_const(mrb, bsdgpio, "EDGE_FALLING",  mrb_fixnum_value(GPIO_INTR_EDGE_FALLING));
+    mrb_define_const(mrb, bsdgpio, "EDGE_BOTH",  mrb_fixnum_value(GPIO_INTR_EDGE_BOTH));
     mrb_define_method(mrb, bsdgpio, "initialize", mrb_bsdgpio_init, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, bsdgpio, "set", mrb_bsdgpio_set, MRB_ARGS_REQ(2));
     mrb_define_method(mrb, bsdgpio, "get", mrb_bsdgpio_get, MRB_ARGS_REQ(1));
@@ -145,6 +173,7 @@ void mrb_mruby_bsdgpio_gem_init(mrb_state *mrb)
     mrb_define_method(mrb, bsdgpio, "access32", mrb_bsdgpio_access32, MRB_ARGS_REQ(3));
     mrb_define_method(mrb, bsdgpio, "config32", mrb_bsdgpio_config32, MRB_ARGS_REQ(3));
     mrb_define_method(mrb, bsdgpio, "maxpin", mrb_bsdgpio_maxpin, MRB_ARGS_NONE());
+    mrb_define_method(mrb, bsdgpio, "waitedge", mrb_bsdgpio_waitedge, MRB_ARGS_REQ(2));
     DONE;
 }
 
